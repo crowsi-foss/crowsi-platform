@@ -1,0 +1,20 @@
+---
+
+#Ingress route for the defaultAPI service
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: defaultapiingressroute
+  namespace: default
+
+spec:
+  entryPoints:
+    - websecure
+
+  routes:
+  - match: PathPrefix(`/`)
+    priority: 1
+    kind: Rule
+    services:
+    - name: defaultapi-service
+      port: 8000

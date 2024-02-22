@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: TLSOption
+metadata:
+  name: certmanoptions
+  namespace: default
+
+spec:
+  clientAuth:
+    clientAuthType: NoClientCert

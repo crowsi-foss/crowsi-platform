@@ -1,0 +1,50 @@
+#Traefik is the used proxy server which manages client authentication and connection distribution to the different vulnerable backend containers.
+#to deploy traefik easily, the official helm chart is used.
+#this file contains the required configurations for traefik and needs to be applied when deploying traefik with helm
+
+#configure traefik logging
+logs:
+  general:
+    level: INFO  #should be changed to info when everything is running smothly
+  access:
+    enabled: true #enables traefik access logs
+    format: json
+    fields:
+      headers:
+        defaultMode: keep
+        names:
+          X-Forwarded-Tls-Client-Cert-Info: keep  #shall ensure that client cert ID is part of log. see https://github.com/traefik/traefik/issues/9719 and https://doc.traefik.io/traefik/observability/access-logs/#limiting-the-fieldsincluding-headers
+          X-Real-IP: keep
+          X-Forwarded-For: keep
+          
+
+service:
+  spec:
+    externalTrafficPolicy: Local  #ensures that loadbalancer that is added by cloud providers is not overwriting source IP see https://learn.microsoft.com/en-us/azure/aks/load-balancer-standard#maintain-the-clients-ip-on-inbound-connections
+
+
+
+    #these TLS options will activate client authentication based on client certificates
+tlsOptions:
+  default: #default tls options for all https routes which do not explicitly define tls options e.g. like cert manager issuer 
+    clientAuth:
+      clientAuthType: RequireAndVerifyClientCert  #only clients with certificates matching a CA listed in secretNames will be granted access
+      secretNames:
+        - client-auth-ca-cert #reference to a resource defined in a yaml file containing the CA file of these clients. This here is a demo CA
+
+tlsStore:
+  default:
+    defaultCertificate:
+      secretName: my-tls-secret
+
+ports:
+  web:
+    redirectTo:
+      port: websecure
+
+  websecure:
+    middlewares:
+      - default-passtlsclientcert@kubernetescrd
+
+additionalArguments:
+- "--global.sendanonymoususage=false" #deactivates anonoymous logs being transfered to traefik

@@ -1,0 +1,12 @@
+#this file is needed so that cert-manager actually request a certificate from let's encrypt using the defined issuer
+#it the stores the certificates as a secret in "my-tls-secret"
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: my-certificate
+spec:
+  secretName: my-tls-secret
+  issuerRef:
+    name: letsencrypthttpchallenge
+  dnsNames:
+    - {{ .Values.dnsName }}  #specifies for which domain the certificate shall be retrieved. Needs to be in line with the dns name of the given public ip
