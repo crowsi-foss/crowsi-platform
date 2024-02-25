@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 #this file is needed so that cert-manager actually request a certificate from let's encrypt using the defined issuer
 #it the stores the certificates as a secret in "my-tls-secret"
 apiVersion: cert-manager.io/v1
