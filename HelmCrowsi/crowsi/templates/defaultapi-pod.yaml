@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: defaultapi
-        image: crowsi/httpcatcherdecoy:0.1 #reference to the docker image stored in the azure container registry. 
+        image: crowsi/httpcatcherdecoy:0.1  
         ports:
         - containerPort: 8000
 
