@@ -19,7 +19,7 @@ in order to set-up crowsi by yourself, you need:
 # deployment steps
 1. Clone or download this repository
 2. Install cert-manager on your kubernetes cluster (currently tested with version 1.13.2)
-3. Install traefik on your kubernetes cluster, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik version 25.0.0. this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under azure, so best choose something random and check if deployment is executed successfully. 
+3. Install traefik on your kubernetes cluster with the files stored in HelmTraefik, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik version 25.0.0. this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
 
 helm install --values ./HelmTraefik/myvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik traefik/traefik --version 25.0.0
 
@@ -39,7 +39,7 @@ There are many solutions out there, even some open source ones. To give one exam
 
 # Looking for a managed service and premium decoys?
 operating and enhancing a honeypot solution can be though, therefore we are working on providing crowsi as a managed service platform.
-Want to get more details? Go to 
+Want to get more details? Go to www.crowsi.com/managed-service/
 
 
 
