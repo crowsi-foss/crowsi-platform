@@ -4,7 +4,7 @@ It is available on docker hub and the code can be found here
 https://github.com/crowsi-foss/httpCatcherDecoy
 
 Want to get more information on the crowsi-platform? Visit:
-
+www.crowsi.com
 
 # deployment prerequisites
 in order to set-up crowsi by yourself, you need:
@@ -13,7 +13,7 @@ in order to set-up crowsi by yourself, you need:
 - Traefik's helm chart repository, as crowsi makes use of the traefik proxy
 - Cert-Managers helm chart repository, as crowsi uses cert-manager to retrieve and manages tls certificates from let's encrypt
 - a mail address used to retrieve certificates from let's encrypt
-- base64 string of the certificate of the CA that signed the certificates of your edge devices (see for more details). You can encode a certificate into base64 on a terminal by using this command "cat ca.crt | base64"
+- base64 string of the certificate of the CA that signed the certificates of your edge devices (see www.crowsi.com/documentation for more details). You can encode a certificate into base64 on a terminal by using this command "cat ca.crt | base64"
 
 
 # deployment steps
