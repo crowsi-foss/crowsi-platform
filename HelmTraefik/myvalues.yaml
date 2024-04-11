@@ -6,12 +6,6 @@
 #to deploy traefik easily, the official helm chart is used.
 #this file contains the required configurations for traefik and needs to be applied when deploying traefik with helm
 
-#set pod label
-deployment:
-  podLabels:
-    app: traefik
-
-
 #configure traefik logging
 logs:
   general:

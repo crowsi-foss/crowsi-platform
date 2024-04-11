@@ -27,7 +27,6 @@ helm install --values ./HelmTraefik/myvalues.yaml --set service.annotations."ser
 4. Install crowsi on your kubernetes cluster, while adding the base64 string of your CA certificate, the complete dns address of your deployment endpoint and your mail address.
 helm install --set cacrt=base64string --set dnsName=DNSAddressOfYourEndpoint --set mail=YourMail crowsi ./HelmCrowsi/crowsi
 
-furthermore you should install a network plugin like calico in order to make the defined network policy effective.
 
 # how to gain insights
 Purpose of crowsi is to bind resources of attackers, interacting with valuable edge-device assets and create valuable insights by intensive logging. 
