@@ -2,9 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+
 #Traefik is the used proxy server which manages client authentication and connection distribution to the different vulnerable backend containers.
 #to deploy traefik easily, the official helm chart is used.
-#this file contains the required configurations for traefik and needs to be applied when deploying traefik with helm
+#the following are the required configurations for traefik 
 
 #configure traefik logging
 logs:
