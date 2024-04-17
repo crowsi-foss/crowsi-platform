@@ -18,11 +18,11 @@ in order to set-up crowsi by yourself, you need:
 1. Clone or download this repository
 2. Install cert-manager on your kubernetes cluster. Run therefore the following code line
 
-`helm install cert-manager ./HelmTemplates/cert-manager/cert-manager-v1.13.2.tgz --set installCRDs=true`
+`helm install cert-manager ./HelmTemplates/cert-manager --set installCRDs=true`
    
 3. Install traefik on your kubernetes cluster with the files stored in HelmTraefik, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
 
-`helm install --values ./HelmTemplates/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik ./HelmTemplates/traefik/traefik-25.0.0.tgz`
+`helm install --values ./HelmTemplates/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik ./HelmTemplates/traefik`
 
 
 4. Install crowsi on your kubernetes cluster, while adding the base64 string of your CA certificate, the complete dns address of your deployment endpoint and your mail address.
