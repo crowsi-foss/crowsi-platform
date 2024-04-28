@@ -1,11 +1,677 @@
 # Change Log
 
+## 28.0.0-rc1  ![AppVersion: v3.0.0-rc5](https://img.shields.io/static/v1?label=AppVersion&message=v3.0.0-rc5&color=success&logo=) ![Kubernetes: >=1.16.0-0](https://img.shields.io/static/v1?label=Kubernetes&message=%3E%3D1.16.0-0&color=informational&logo=kubernetes) ![Helm: v3](https://img.shields.io/static/v1?label=Helm&message=v3&color=informational&logo=helm)
+
+**Release date:** 2024-04-17
+
+**Upgrade Notes**
+
+This is a major breaking upgrade. [Migration guide](https://doc.traefik.io/traefik/v3.0/migration/v2-to-v3/) have been applied on the chart.
+
+It needs a Kubernetes v1.22 or higher.
+All CRDs using _API Group_ `traefik.containo.us` are not supported anymore in Traefik Proxy v3
+
+CRDs needs to be upgraded: `kubectl apply --server-side --force-conflicts -k https://github.com/traefik/traefik-helm-chart/traefik/crds/`
+
+After upgrade, CRDs with _API Group_ `traefik.containo.us` can be removed:
+
+```shell
+kubectl delete crds \
+  ingressroutes.traefik.containo.us \
+  ingressroutetcps.traefik.containo.us \
+  ingressrouteudps.traefik.containo.us \
+  middlewares.traefik.containo.us \
+  middlewaretcps.traefik.containo.us \
+  serverstransports.traefik.containo.us \
+  tlsoptions.traefik.containo.us \
+  tlsstores.traefik.containo.us \
+  traefikservices.traefik.containo.us
+```
+
+**Changes**
+
+* feat(podtemplate): set GOMEMLIMIT, GOMAXPROCS when limits are defined
+* feat: ✨ fail gracefully when required port number is not set
+* feat!: :boom: initial support of Traefik Proxy v3
+* docs: 📚️ improve EXAMPLES on acme resolver
+* chore(release): 🚀 publish v28 rc1
+
+### Default value changes
+
+```diff
+diff --git a/traefik/values.yaml b/traefik/values.yaml
+index cd9fb6e..c0d72d8 100644
+--- a/traefik/values.yaml
++++ b/traefik/values.yaml
+@@ -120,12 +120,13 @@ ingressClass:
+   isDefaultClass: true
+   # name: my-custom-class
+
++core:
++  # -- Can be used to use globally v2 router syntax
++  # See https://doc.traefik.io/traefik/v3.0/migration/v2-to-v3/#new-v3-syntax-notable-changes
++  defaultRuleSyntax:
++
+ # Traefik experimental features
+ experimental:
+-  # This value is no longer used, set the image.tag to a semver higher than 3.0, e.g. "v3.0.0-beta3"
+-  # v3:
+-  # -- Enable traefik version 3
+-
+   # -- Enable traefik experimental plugins
+   plugins: {}
+   # demo:
+@@ -309,7 +310,7 @@ logs:
+     # format: json
+     # By default, the level is set to ERROR.
+     # -- Alternative logging levels are DEBUG, PANIC, FATAL, ERROR, WARN, and INFO.
+-    level: ERROR
++    level: INFO
+   access:
+     # -- To enable access logs
+     enabled: false
+@@ -328,6 +329,8 @@ logs:
+     # statuscodes: "200,300-302"
+     # retryattempts: true
+     # minduration: 10ms
++    # -- Enables accessLogs for internal resources. Default: false.
++    addInternals:
+     fields:
+       general:
+         # -- Available modes: keep, drop, redact.
+@@ -347,6 +350,9 @@ logs:
+         # Content-Type: keep
+
+ metrics:
++  ## -- Enable metrics for internal resources. Default: false
++  addInternals:
++
+   ## -- Prometheus is enabled by default.
+   ## -- It can be disabled by setting "prometheus: null"
+   prometheus:
+@@ -376,31 +382,6 @@ metrics:
+   #    # addRoutersLabels: true
+   #    ## Enable metrics on services. Default=true
+   #    # addServicesLabels: false
+-  #  influxdb:
+-  #    ## Address instructs exporter to send metrics to influxdb at this address.
+-  #    address: localhost:8089
+-  #    ## InfluxDB's address protocol (udp or http). Default="udp"
+-  #    protocol: udp
+-  #    ## InfluxDB database used when protocol is http. Default=""
+-  #    # database: ""
+-  #    ## InfluxDB retention policy used when protocol is http. Default=""
+-  #    # retentionPolicy: ""
+-  #    ## InfluxDB username (only with http). Default=""
+-  #    # username: ""
+-  #    ## InfluxDB password (only with http). Default=""
+-  #    # password: ""
+-  #    ## The interval used by the exporter to push metrics to influxdb. Default=10s
+-  #    # pushInterval: 30s
+-  #    ## Additional labels (influxdb tags) on all metrics.
+-  #    # additionalLabels:
+-  #    #   env: production
+-  #    #   foo: bar
+-  #    ## Enable metrics on entry points. Default=true
+-  #    # addEntryPointsLabels: false
+-  #    ## Enable metrics on routers. Default=false
+-  #    # addRoutersLabels: true
+-  #    ## Enable metrics on services. Default=true
+-  #    # addServicesLabels: false
+   #  influxdb2:
+   #    ## Address instructs exporter to send metrics to influxdb v2 at this address.
+   #    address: localhost:8086
+@@ -435,43 +416,53 @@ metrics:
+   #    # addRoutersLabels: true
+   #    ## Enable metrics on services. Default=true
+   #    # addServicesLabels: false
+-  #  openTelemetry:
+-  #    ## Address of the OpenTelemetry Collector to send metrics to.
+-  #    address: "localhost:4318"
+-  #    ## Enable metrics on entry points.
+-  #    addEntryPointsLabels: true
+-  #    ## Enable metrics on routers.
+-  #    addRoutersLabels: true
+-  #    ## Enable metrics on services.
+-  #    addServicesLabels: true
+-  #    ## Explicit boundaries for Histogram data points.
+-  #    explicitBoundaries:
+-  #      - "0.1"
+-  #      - "0.3"
+-  #      - "1.2"
+-  #      - "5.0"
+-  #    ## Additional headers sent with metrics by the reporter to the OpenTelemetry Collector.
+-  #    headers:
+-  #      foo: bar
+-  #      test: test
+-  #    ## Allows reporter to send metrics to the OpenTelemetry Collector without using a secured protocol.
+-  #    insecure: true
+-  #    ## Interval at which metrics are sent to the OpenTelemetry Collector.
+-  #    pushInterval: 10s
+-  #    ## Allows to override the default URL path used for sending metrics. This option has no effect when using gRPC transport.
+-  #    path: /foo/v1/traces
+-  #    ## Defines the TLS configuration used by the reporter to send metrics to the OpenTelemetry Collector.
+-  #    tls:
+-  #      ## The path to the certificate authority, it defaults to the system bundle.
+-  #      ca: path/to/ca.crt
+-  #      ## The path to the public certificate. When using this option, setting the key option is required.
+-  #      cert: path/to/foo.cert
+-  #      ## The path to the private key. When using this option, setting the cert option is required.
+-  #      key: path/to/key.key
+-  #      ## If set to true, the TLS connection accepts any certificate presented by the server regardless of the hostnames it covers.
+-  #      insecureSkipVerify: true
+-  #    ## This instructs the reporter to send metrics to the OpenTelemetry Collector using gRPC.
+-  #    grpc: true
++  otlp:
++    # -- Set to true in order to enable the OpenTelemetry metrics
++    enabled: false
++    # -- Enable metrics on entry points. Default: true
++    addEntryPointsLabels:
++    # -- Enable metrics on routers. Default: false
++    addRoutersLabels:
++    # -- Enable metrics on services. Default: true
++    addServicesLabels:
++    # -- Explicit boundaries for Histogram data points. Default: [.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10]
++    explicitBoundaries:
++    # -- Interval at which metrics are sent to the OpenTelemetry Collector. Default: 10s
++    pushInterval:
++    http:
++      # -- Set to true in order to send metrics to the OpenTelemetry Collector using HTTP.
++      enabled: false
++      # -- Format: <scheme>://<host>:<port><path>. Default: http://localhost:4318/v1/metrics
++      endpoint:
++      # -- Additional headers sent with metrics by the reporter to the OpenTelemetry Collector.
++      headers:
++      ## Defines the TLS configuration used by the reporter to send metrics to the OpenTelemetry Collector.
++      tls:
++        # -- The path to the certificate authority, it defaults to the system bundle.
++        ca:
++        # -- The path to the public certificate. When using this option, setting the key option is required.
++        cert:
++        # -- The path to the private key. When using this option, setting the cert option is required.
++        key:
++        # -- When set to true, the TLS connection accepts any certificate presented by the server regardless of the hostnames it covers.
++        insecureSkipVerify:
++    grpc:
++      # -- Set to true in order to send metrics to the OpenTelemetry Collector using gRPC
++      enabled: false
++      # -- Format: <scheme>://<host>:<port><path>. Default: http://localhost:4318/v1/metrics
++      endpoint:
++      # -- Allows reporter to send metrics to the OpenTelemetry Collector without using a secured protocol.
++      insecure:
++      ## Defines the TLS configuration used by the reporter to send metrics to the OpenTelemetry Collector.
++      tls:
++        # -- The path to the certificate authority, it defaults to the system bundle.
++        ca:
++        # -- The path to the public certificate. When using this option, setting the key option is required.
++        cert:
++        # -- The path to the private key. When using this option, setting the cert option is required.
++        key:
++        # -- When set to true, the TLS connection accepts any certificate presented by the server regardless of the hostnames it covers.
++        insecureSkipVerify:
+
+   ## -- enable optional CRDs for Prometheus Operator
+   ##
+@@ -524,51 +515,46 @@ metrics:
+
+ ## Tracing
+ # -- https://doc.traefik.io/traefik/observability/tracing/overview/
+-tracing: {}
+-#  openTelemetry: # traefik v3+ only
+-#    grpc: true
+-#    insecure: true
+-#    address: localhost:4317
+-# instana:
+-#   localAgentHost: 127.0.0.1
+-#   localAgentPort: 42699
+-#   logLevel: info
+-#   enableAutoProfile: true
+-# datadog:
+-#   localAgentHostPort: 127.0.0.1:8126
+-#   debug: false
+-#   globalTag: ""
+-#   prioritySampling: false
+-# jaeger:
+-#   samplingServerURL: http://localhost:5778/sampling
+-#   samplingType: const
+-#   samplingParam: 1.0
+-#   localAgentHostPort: 127.0.0.1:6831
+-#   gen128Bit: false
+-#   propagation: jaeger
+-#   traceContextHeaderName: uber-trace-id
+-#   disableAttemptReconnecting: true
+-#   collector:
+-#      endpoint: ""
+-#      user: ""
+-#      password: ""
+-# zipkin:
+-#   httpEndpoint: http://localhost:9411/api/v2/spans
+-#   sameSpan: false
+-#   id128Bit: true
+-#   sampleRate: 1.0
+-# haystack:
+-#   localAgentHost: 127.0.0.1
+-#   localAgentPort: 35000
+-#   globalTag: ""
+-#   traceIDHeaderName: ""
+-#   parentIDHeaderName: ""
+-#   spanIDHeaderName: ""
+-#   baggagePrefixHeaderName: ""
+-# elastic:
+-#   serverURL: http://localhost:8200
+-#   secretToken: ""
+-#   serviceEnvironment: ""
++tracing:
++  # -- Enables tracing for internal resources. Default: false.
++  addInternals:
++  otlp:
++    # -- See https://doc.traefik.io/traefik/v3.0/observability/tracing/opentelemetry/
++    enabled: false
++    http:
++      # -- Set to true in order to send metrics to the OpenTelemetry Collector using HTTP.
++      enabled: false
++      # -- Format: <scheme>://<host>:<port><path>. Default: http://localhost:4318/v1/metrics
++      endpoint:
++      # -- Additional headers sent with metrics by the reporter to the OpenTelemetry Collector.
++      headers:
++      ## Defines the TLS configuration used by the reporter to send metrics to the OpenTelemetry Collector.
++      tls:
++        # -- The path to the certificate authority, it defaults to the system bundle.
++        ca:
++        # -- The path to the public certificate. When using this option, setting the key option is required.
++        cert:
++        # -- The path to the private key. When using this option, setting the cert option is required.
++        key:
++        # -- When set to true, the TLS connection accepts any certificate presented by the server regardless of the hostnames it covers.
++        insecureSkipVerify:
++    grpc:
++      # -- Set to true in order to send metrics to the OpenTelemetry Collector using gRPC
++      enabled: false
++      # -- Format: <scheme>://<host>:<port><path>. Default: http://localhost:4318/v1/metrics
++      endpoint:
++      # -- Allows reporter to send metrics to the OpenTelemetry Collector without using a secured protocol.
++      insecure:
++      ## Defines the TLS configuration used by the reporter to send metrics to the OpenTelemetry Collector.
++      tls:
++        # -- The path to the certificate authority, it defaults to the system bundle.
++        ca:
++        # -- The path to the public certificate. When using this option, setting the key option is required.
++        cert:
++        # -- The path to the private key. When using this option, setting the cert option is required.
++        key:
++        # -- When set to true, the TLS connection accepts any certificate presented by the server regardless of the hostnames it covers.
++        insecureSkipVerify:
+
+ # -- Global command arguments to be passed to all traefik's pods
+ globalArguments:
+@@ -756,7 +742,6 @@ ports:
+ #   default:
+ #     labels: {}
+ #     sniStrict: true
+-#     preferServerCipherSuites: true
+ #   custom-options:
+ #     labels: {}
+ #     curvePreferences:
+```
+
+## 27.0.0  ![AppVersion: v2.11.0](https://img.shields.io/static/v1?label=AppVersion&message=v2.11.0&color=success&logo=) ![Kubernetes: >=1.16.0-0](https://img.shields.io/static/v1?label=Kubernetes&message=%3E%3D1.16.0-0&color=informational&logo=kubernetes) ![Helm: v3](https://img.shields.io/static/v1?label=Helm&message=v3&color=informational&logo=helm)
+
+**Release date:** 2024-04-02
+
+**Upgrade notes**
+
+Custom services and port exposure have been redesigned, requiring the following changes:
+- if you were overriding port exposure behavior using the `expose` or `exposeInternal` flags, you should replace them with a service name to boolean mapping, i.e. replace this:
+
+```yaml
+ports:
+   web:
+      expose: false
+      exposeInternal: true
+```
+
+with this:
+
+```yaml
+ports:
+   web:
+      expose:
+         default: false
+         internal: true
+```
+
+- if you were previously using the `service.internal` value, you should migrate the values to the `service.additionalServices.internal` value instead; this should yield the same results, but make sure to carefully check for any changes!
+
+**Changes**
+
+* fix: remove null annotations on dashboard `IngressRoute`
+* fix(rbac): do not create clusterrole for namespace deployment on Traefik v3
+* feat: restrict access to secrets
+* feat!: :boom: refactor custom services and port exposure
+* chore(release): 🚀 publish v27.0.0
+
+### Default value changes
+
+```diff
+diff --git a/traefik/values.yaml b/traefik/values.yaml
+index dbd078f..363871d 100644
+--- a/traefik/values.yaml
++++ b/traefik/values.yaml
+@@ -250,6 +250,9 @@ providers:
+     # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces.
+     namespaces: []
+     # - "default"
++    # Disable cluster IngressClass Lookup - Requires Traefik V3.
++    # When combined with rbac.namespaced: true, ClusterRole will not be created and ingresses must use kubernetes.io/ingress.class annotation instead of spec.ingressClassName.
++    disableIngressClassLookup: false
+     # IP used for Kubernetes Ingress endpoints
+     publishedService:
+       enabled: false
+@@ -626,22 +629,20 @@ ports:
+     # -- You SHOULD NOT expose the traefik port on production deployments.
+     # If you want to access it from outside your cluster,
+     # use `kubectl port-forward` or create a secure ingress
+-    expose: false
++    expose:
++      default: false
+     # -- The exposed port for this service
+     exposedPort: 9000
+     # -- The port protocol (TCP/UDP)
+     protocol: TCP
+-    # -- Defines whether the port is exposed on the internal service;
+-    # note that ports exposed on the default service are exposed on the internal
+-    # service by default as well.
+-    exposeInternal: false
+   web:
+     ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
+     # asDefault: true
+     port: 8000
+     # hostPort: 8000
+     # containerPort: 8000
+-    expose: true
++    expose:
++      default: true
+     exposedPort: 80
+     ## -- Different target traefik port on the cluster, useful for IP type LB
+     # targetPort: 80
+@@ -650,10 +651,6 @@ ports:
+     # -- Use nodeport if set. This is useful if you have configured Traefik in a
+     # LoadBalancer.
+     # nodePort: 32080
+-    # -- Defines whether the port is exposed on the internal service;
+-    # note that ports exposed on the default service are exposed on the internal
+-    # service by default as well.
+-    exposeInternal: false
+     # Port Redirections
+     # Added in 2.2, you can make permanent redirects via entrypoints.
+     # https://docs.traefik.io/routing/entrypoints/#redirection
+@@ -677,17 +674,14 @@ ports:
+     port: 8443
+     # hostPort: 8443
+     # containerPort: 8443
+-    expose: true
++    expose:
++      default: true
+     exposedPort: 443
+     ## -- Different target traefik port on the cluster, useful for IP type LB
+     # targetPort: 80
+     ## -- The port protocol (TCP/UDP)
+     protocol: TCP
+     # nodePort: 32443
+-    # -- Defines whether the port is exposed on the internal service;
+-    # note that ports exposed on the default service are exposed on the internal
+-    # service by default as well.
+-    exposeInternal: false
+     ## -- Specify an application protocol. This may be used as a hint for a Layer 7 load balancer.
+     # appProtocol: https
+     #
+@@ -744,15 +738,12 @@ ports:
+     # -- You may not want to expose the metrics port on production deployments.
+     # If you want to access it from outside your cluster,
+     # use `kubectl port-forward` or create a secure ingress
+-    expose: false
++    expose:
++      default: false
+     # -- The exposed port for this service
+     exposedPort: 9100
+     # -- The port protocol (TCP/UDP)
+     protocol: TCP
+-    # -- Defines whether the port is exposed on the internal service;
+-    # note that ports exposed on the default service are exposed on the internal
+-    # service by default as well.
+-    exposeInternal: false
+
+ # -- TLS Options are created as TLSOption CRDs
+ # https://doc.traefik.io/traefik/https/tls/#tls-options
+@@ -814,6 +805,7 @@ service:
+   #   - IPv4
+   #   - IPv6
+   ##
++  additionalServices: {}
+   ## -- An additional and optional internal Service.
+   ## Same parameters as external Service
+   # internal:
+@@ -899,11 +891,14 @@ hostNetwork: false
+ rbac:
+   enabled: true
+   # If set to false, installs ClusterRole and ClusterRoleBinding so Traefik can be used across namespaces.
+-  # If set to true, installs Role and RoleBinding. Providers will only watch target namespace.
++  # If set to true, installs Role and RoleBinding instead of ClusterRole/ClusterRoleBinding. Providers will only watch target namespace.
++  # When combined with providers.kubernetesIngress.disableIngressClassLookup: true and Traefik V3, ClusterRole to watch IngressClass is also disabled.
+   namespaced: false
+   # Enable user-facing roles
+   # https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
+   # aggregateTo: [ "admin" ]
++  # List of Kubernetes secrets that are accessible for Traefik. If empty, then access is granted to every secret.
++  secretResourceNames: []
+
+ # -- Enable to create a PodSecurityPolicy and assign it to the Service Account via RoleBinding or ClusterRoleBinding
+ podSecurityPolicy:
+```
+
+## 26.1.0  ![AppVersion: v2.11.0](https://img.shields.io/static/v1?label=AppVersion&message=v2.11.0&color=success&logo=) ![Kubernetes: >=1.16.0-0](https://img.shields.io/static/v1?label=Kubernetes&message=%3E%3D1.16.0-0&color=informational&logo=kubernetes) ![Helm: v3](https://img.shields.io/static/v1?label=Helm&message=v3&color=informational&logo=helm)
+
+**Release date:** 2024-02-19
+
+* fix: 🐛 set runtimeClassName at pod level
+* fix: 🐛 missing quote on experimental plugin args
+* fix: update traefik v3 serverstransporttcps CRD
+* feat: set runtimeClassName on pod spec
+* feat: create v1 Gateway and GatewayClass Version for Traefik v3
+* feat: allow exposure of ports on internal service only
+* doc: fix invalid suggestion on TLSOption (#996)
+* chore: 🔧 update maintainers
+* chore: 🔧 promote jnoordsij to Traefik Helm Chart maintainer
+* chore(release): 🚀 publish v26.1.0
+* chore(deps): update traefik docker tag to v2.11.0
+* chore(deps): update traefik docker tag to v2.10.7
+* chore(crds): update definitions for traefik v2.11
+
+### Default value changes
+
+```diff
+diff --git a/traefik/values.yaml b/traefik/values.yaml
+index f9dac91..dbd078f 100644
+--- a/traefik/values.yaml
++++ b/traefik/values.yaml
+@@ -100,6 +100,8 @@ deployment:
+   #     port: 9000
+   #     host: localhost
+   #     scheme: HTTP
++  # -- Set a runtimeClassName on pod
++  runtimeClassName:
+
+ # -- Pod disruption budget
+ podDisruptionBudget:
+@@ -629,6 +631,10 @@ ports:
+     exposedPort: 9000
+     # -- The port protocol (TCP/UDP)
+     protocol: TCP
++    # -- Defines whether the port is exposed on the internal service;
++    # note that ports exposed on the default service are exposed on the internal
++    # service by default as well.
++    exposeInternal: false
+   web:
+     ## -- Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint it will only use this entrypoint.
+     # asDefault: true
+@@ -644,6 +650,10 @@ ports:
+     # -- Use nodeport if set. This is useful if you have configured Traefik in a
+     # LoadBalancer.
+     # nodePort: 32080
++    # -- Defines whether the port is exposed on the internal service;
++    # note that ports exposed on the default service are exposed on the internal
++    # service by default as well.
++    exposeInternal: false
+     # Port Redirections
+     # Added in 2.2, you can make permanent redirects via entrypoints.
+     # https://docs.traefik.io/routing/entrypoints/#redirection
+@@ -674,6 +684,10 @@ ports:
+     ## -- The port protocol (TCP/UDP)
+     protocol: TCP
+     # nodePort: 32443
++    # -- Defines whether the port is exposed on the internal service;
++    # note that ports exposed on the default service are exposed on the internal
++    # service by default as well.
++    exposeInternal: false
+     ## -- Specify an application protocol. This may be used as a hint for a Layer 7 load balancer.
+     # appProtocol: https
+     #
+@@ -735,6 +749,10 @@ ports:
+     exposedPort: 9100
+     # -- The port protocol (TCP/UDP)
+     protocol: TCP
++    # -- Defines whether the port is exposed on the internal service;
++    # note that ports exposed on the default service are exposed on the internal
++    # service by default as well.
++    exposeInternal: false
+
+ # -- TLS Options are created as TLSOption CRDs
+ # https://doc.traefik.io/traefik/https/tls/#tls-options
+@@ -745,7 +763,7 @@ ports:
+ #     labels: {}
+ #     sniStrict: true
+ #     preferServerCipherSuites: true
+-#   customOptions:
++#   custom-options:
+ #     labels: {}
+ #     curvePreferences:
+ #       - CurveP521
+@@ -796,7 +814,7 @@ service:
+   #   - IPv4
+   #   - IPv6
+   ##
+-  ## -- An additionnal and optional internal Service.
++  ## -- An additional and optional internal Service.
+   ## Same parameters as external Service
+   # internal:
+   #   type: ClusterIP
+```
+
+## 26.0.0  ![AppVersion: v2.10.6](https://img.shields.io/static/v1?label=AppVersion&message=v2.10.6&color=success&logo=) ![Kubernetes: >=1.16.0-0](https://img.shields.io/static/v1?label=Kubernetes&message=%3E%3D1.16.0-0&color=informational&logo=kubernetes) ![Helm: v3](https://img.shields.io/static/v1?label=Helm&message=v3&color=informational&logo=helm)
+
+**Release date:** 2023-12-05
+
+* fix: 🐛 improve confusing suggested value on openTelemetry.grpc
+* fix: 🐛 declare http3 udp port, with or without hostport
+* feat: 💥 deployment.podannotations support interpolation with tpl
+* feat: allow update of namespace policy for websecure listener
+* feat: allow defining startupProbe
+* feat: add file provider
+* feat: :boom: unify plugin import between traefik and this chart
+* chore(release): 🚀 publish v26
+* chore(deps): update traefik docker tag to v2.10.6
+* Release namespace for Prometheus Operator resources
+
+### Default value changes
+
+```diff
+diff --git a/traefik/values.yaml b/traefik/values.yaml
+index 71e377e..f9dac91 100644
+--- a/traefik/values.yaml
++++ b/traefik/values.yaml
+@@ -40,6 +40,7 @@ deployment:
+   # -- Additional deployment labels (e.g. for filtering deployment by custom labels)
+   labels: {}
+   # -- Additional pod annotations (e.g. for mesh injection or prometheus scraping)
++  # It supports templating. One can set it with values like traefik/name: '{{ template "traefik.name" . }}'
+   podAnnotations: {}
+   # -- Additional Pod labels (e.g. for filtering Pod by custom labels)
+   podLabels: {}
+@@ -119,10 +120,12 @@ experimental:
+   # This value is no longer used, set the image.tag to a semver higher than 3.0, e.g. "v3.0.0-beta3"
+   # v3:
+   # -- Enable traefik version 3
+-  #  enabled: false
+-  plugins:
+-    # -- Enable traefik experimental plugins
+-    enabled: false
++
++  # -- Enable traefik experimental plugins
++  plugins: {}
++  # demo:
++  #   moduleName: github.com/traefik/plugindemo
++  #   version: v0.2.1
+   kubernetesGateway:
+     # -- Enable traefik experimental GatewayClass CRD
+     enabled: false
+@@ -206,6 +209,17 @@ livenessProbe:
+   # -- The number of seconds to wait for a probe response before considering it as failed.
+   timeoutSeconds: 2
+
++# -- Define Startup Probe for container: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
++# eg.
++# `startupProbe:
++#   exec:
++#     command:
++#       - mycommand
++#       - foo
++#   initialDelaySeconds: 5
++#   periodSeconds: 5`
++startupProbe:
++
+ providers:
+   kubernetesCRD:
+     # -- Load Kubernetes IngressRoute provider
+@@ -241,6 +255,23 @@ providers:
+       # By default this Traefik service
+       # pathOverride: ""
+
++  file:
++    # -- Create a file provider
++    enabled: false
++    # -- Allows Traefik to automatically watch for file changes
++    watch: true
++    # -- File content (YAML format, go template supported) (see https://doc.traefik.io/traefik/providers/file/)
++    content: ""
++      # http:
++      #   routers:
++      #     router0:
++      #       entryPoints:
++      #       - web
++      #       middlewares:
++      #       - my-basic-auth
++      #       service: service-foo
++      #       rule: Path(`/foo`)
++
+ #
+ # -- Add volumes to the traefik pod. The volume name will be passed to tpl.
+ # This can be used to mount a cert pair or a configmap that holds a config.toml file.
+@@ -487,7 +518,7 @@ metrics:
+ # -- https://doc.traefik.io/traefik/observability/tracing/overview/
+ tracing: {}
+ #  openTelemetry: # traefik v3+ only
+-#    grpc: {}
++#    grpc: true
+ #    insecure: true
+ #    address: localhost:4317
+ # instana:
+```
+
 ## 25.0.0  ![AppVersion: v2.10.5](https://img.shields.io/static/v1?label=AppVersion&message=v2.10.5&color=success&logo=) ![Kubernetes: >=1.16.0-0](https://img.shields.io/static/v1?label=Kubernetes&message=%3E%3D1.16.0-0&color=informational&logo=kubernetes) ![Helm: v3](https://img.shields.io/static/v1?label=Helm&message=v3&color=informational&logo=helm)
 
-**Release date:** 2023-10-16
+**Release date:** 2023-10-23
 
 * revert: "fix: 🐛 remove old CRDs using traefik.containo.us"
-* fix: 🐛 warn user when he's using previous syntax on redirect
 * fix: 🐛 remove old CRDs using traefik.containo.us
 * fix: disable ClusterRole and ClusterRoleBinding when not needed
 * fix: detect correctly v3 version when using sha in `image.tag`
@@ -17,7 +683,7 @@
 * feat: :boom: rework and allow update of namespace policy for Gateway
 * docs: Fix typo in the default values file
 * chore: remove label whitespace at TLSOption
-* chore(release): 🚀 publish v25.0.0
+* chore(release): publish v25.0.0
 * chore(deps): update traefik docker tag to v2.10.5
 * chore(deps): update docker.io/helmunittest/helm-unittest docker tag to v3.12.3
 * chore(ci): 🔧 👷 add e2e test when releasing
