@@ -5,16 +5,6 @@
 
 version: 2
 updates:
-  - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/HelmTemplates/traefik" # Location of package manifests
-    schedule:
-      interval: "daily"
-    target-branch: "dev"
-  - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/HelmTemplates/cert-manager" # Location of package manifests
-    schedule:
-      interval: "daily"
-    target-branch: "dev"
   - package-ecosystem: "docker"
     directory: "/HelmTemplates/crowsi/templates"
     schedule:
