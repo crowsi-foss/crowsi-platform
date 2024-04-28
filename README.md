@@ -15,12 +15,12 @@ in order to set-up crowsi by yourself, you need:
 
 
 # deployment steps
-1. Clone or download this repository
+1. Clone or download this repository and open a terminal inside the crowsi-platform folder
 2. Install cert-manager on your kubernetes cluster. Run therefore the following code line
 
 `helm install cert-manager ./HelmTemplates/cert-manager --set installCRDs=true`
    
-3. Install traefik on your kubernetes cluster with the files stored in HelmTraefik, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
+3. Install traefik on your kubernetes cluster with the values stored in traefikvalues.yaml, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
 
 `helm install --values ./HelmTemplates/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik ./HelmTemplates/traefik`
 
@@ -34,7 +34,7 @@ in order to set-up crowsi by yourself, you need:
 # how to gain insights
 Purpose of crowsi is to bind resources of attackers, interacting with valuable edge-device assets and create valuable insights by intensive logging. 
 But therefore propper log monitoring is needed.
-crowsi application logs are pushed directly to stdout and obviously you could just manually go through these logs. However, we recommend to integrate crowsi into your existing monitoring platfrom and then create alerts, dashboards and reports just as you need them.
+crowsi application logs are pushed directly to the kubernetes log space and obviously you could just manually go through these logs. However, we recommend to integrate crowsi into your existing monitoring platfrom and then create alerts, dashboards and reports just as you need them.
 
 Don't have a monitoring solution as of now?
 There are many solutions out there, even some open source ones. To give one example, let's name the elastic stack and either the elastic agent or file beat as log collector. 

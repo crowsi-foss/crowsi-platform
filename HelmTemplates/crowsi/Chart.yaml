@@ -9,12 +9,7 @@ description: a honeypot platform for edge devices
 type: application
 
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 1.0.0
 
 home: www.crowsi.com
 
-# dependencies:
-#   - name: traefik
-#     version: 25.0.0
-#     repository: https://traefik.github.io/charts
-  

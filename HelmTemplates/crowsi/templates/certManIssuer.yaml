@@ -10,7 +10,7 @@ metadata:
 spec:
  acme:
    email: {{ .Values.mail }} #mail adress used to issue server certificate from let's encrypt
-   server: https://acme-v02.api.letsencrypt.org/directory   #server address being used to retrieve trusted let's encrypt certificates
+   server: {{ .Values.acmeServer }}   #server address being used to retrieve trusted let's encrypt certificates
 
    privateKeySecretRef:
      # if not existing, it will register a new account and stores it
