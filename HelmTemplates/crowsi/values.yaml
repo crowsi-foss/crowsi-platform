@@ -9,7 +9,7 @@ description: A Helm chart to deploy crowsi, a honeypot solution for edge devices
 type: application
 
 
-version: 0.1.0
+version: 1.0.0
 
 acmeServer: https://acme-v02.api.letsencrypt.org/directory
 
