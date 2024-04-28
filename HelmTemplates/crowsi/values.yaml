@@ -11,4 +11,6 @@ type: application
 
 version: 0.1.0
 
+acmeServer: https://acme-v02.api.letsencrypt.org/directory
+
 
