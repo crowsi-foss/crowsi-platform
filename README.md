@@ -37,11 +37,11 @@ But therefore propper log monitoring is needed.
 crowsi application logs are pushed directly to the kubernetes log space and obviously you could just manually go through these logs. However, we recommend to integrate crowsi into your existing monitoring platfrom and then create alerts, dashboards and reports just as you need them.
 
 Don't have a monitoring solution as of now?
-There are many solutions out there, even some open source ones. To give one example, let's name the elastic stack and either the elastic agent or file beat as log collector. 
+There are many solutions out there, even some open source ones. To give an example of a suitable platform, let's name the elastic stack and either the elastic agent or file beat as log collector. 
 
 
 # Looking for a managed service and premium decoys?
-operating and enhancing a honeypot solution can be though, therefore we are working on providing crowsi as a managed service platform.
+operating and enhancing a honeypot solution can be tough, therefore we are working on providing crowsi as a managed service platform.
 Want to get more details? Go to www.crowsi.com/managed-service/
 
 
