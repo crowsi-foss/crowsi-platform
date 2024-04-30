@@ -66,12 +66,14 @@
         {{- $healthchecksPort := (default (.Values.ports.traefik).port .Values.deployment.healthchecksPort) }}
         {{- $healthchecksHost := (default (.Values.ports.traefik).hostIP .Values.deployment.healthchecksHost) }}
         {{- $healthchecksScheme := (default "HTTP" .Values.deployment.healthchecksScheme) }}
+        {{- $readinessPath := (default "/ping" .Values.deployment.readinessPath) }}
+        {{- $livenessPath := (default "/ping" .Values.deployment.livenessPath) }}
         readinessProbe:
           httpGet:
             {{- with $healthchecksHost }}
             host: {{ . }}
             {{- end }}
-            path: /ping
+            path: {{ $readinessPath }}
             port: {{ $healthchecksPort }}
             scheme: {{ $healthchecksScheme }}
           {{- toYaml .Values.readinessProbe | nindent 10 }}
@@ -80,7 +82,7 @@
             {{- with $healthchecksHost }}
             host: {{ . }}
             {{- end }}
-            path: /ping
+            path: {{ $livenessPath }}
             port: {{ $healthchecksPort }}
             scheme: {{ $healthchecksScheme }}
           {{- toYaml .Values.livenessProbe | nindent 10 }}
@@ -157,9 +159,9 @@
           {{- end }}
           {{- range $name, $config := .Values.ports }}
            {{- if $config }}
-          - "--entrypoints.{{$name}}.address={{ $config.hostIP }}:{{ $config.port }}/{{ default "tcp" $config.protocol | lower }}"
+          - "--entryPoints.{{$name}}.address={{ $config.hostIP }}:{{ $config.port }}/{{ default "tcp" $config.protocol | lower }}"
             {{- with $config.asDefault }}
-          - "--entrypoints.{{$name}}.asDefault={{ . }}"
+          - "--entryPoints.{{$name}}.asDefault={{ . }}"
             {{- end }}
            {{- end }}
           {{- end }}
@@ -499,39 +501,39 @@
                {{- fail "ERROR: Syntax of `ports.web.redirectTo` has changed to `ports.web.redirectTo.port`. Details in PR #934." }}
              {{- end }}
              {{- $toPort := index $.Values.ports $config.redirectTo.port }}
-          - "--entrypoints.{{ $entrypoint }}.http.redirections.entryPoint.to=:{{ $toPort.exposedPort }}"
-          - "--entrypoints.{{ $entrypoint }}.http.redirections.entryPoint.scheme=https"
+          - "--entryPoints.{{ $entrypoint }}.http.redirections.entryPoint.to=:{{ $toPort.exposedPort }}"
+          - "--entryPoints.{{ $entrypoint }}.http.redirections.entryPoint.scheme=https"
              {{- if $config.redirectTo.priority }}
-          - "--entrypoints.{{ $entrypoint }}.http.redirections.entryPoint.priority={{ $config.redirectTo.priority }}"
+          - "--entryPoints.{{ $entrypoint }}.http.redirections.entryPoint.priority={{ $config.redirectTo.priority }}"
              {{- end }}
             {{- end }}
             {{- if $config.middlewares }}
-          - "--entrypoints.{{ $entrypoint }}.http.middlewares={{ join "," $config.middlewares }}"
+          - "--entryPoints.{{ $entrypoint }}.http.middlewares={{ join "," $config.middlewares }}"
             {{- end }}
             {{- if $config.tls }}
               {{- if $config.tls.enabled }}
-          - "--entrypoints.{{ $entrypoint }}.http.tls=true"
+          - "--entryPoints.{{ $entrypoint }}.http.tls=true"
                 {{- if $config.tls.options }}
-          - "--entrypoints.{{ $entrypoint }}.http.tls.options={{ $config.tls.options }}"
+          - "--entryPoints.{{ $entrypoint }}.http.tls.options={{ $config.tls.options }}"
                 {{- end }}
                 {{- if $config.tls.certResolver }}
-          - "--entrypoints.{{ $entrypoint }}.http.tls.certResolver={{ $config.tls.certResolver }}"
+          - "--entryPoints.{{ $entrypoint }}.http.tls.certResolver={{ $config.tls.certResolver }}"
                 {{- end }}
                 {{- if $config.tls.domains }}
                   {{- range $index, $domain := $config.tls.domains }}
                     {{- if $domain.main }}
-          - "--entrypoints.{{ $entrypoint }}.http.tls.domains[{{ $index }}].main={{ $domain.main }}"
+          - "--entryPoints.{{ $entrypoint }}.http.tls.domains[{{ $index }}].main={{ $domain.main }}"
                     {{- end }}
                     {{- if $domain.sans }}
-          - "--entrypoints.{{ $entrypoint }}.http.tls.domains[{{ $index }}].sans={{ join "," $domain.sans }}"
+          - "--entryPoints.{{ $entrypoint }}.http.tls.domains[{{ $index }}].sans={{ join "," $domain.sans }}"
                     {{- end }}
                   {{- end }}
                 {{- end }}
                 {{- if $config.http3 }}
                   {{- if $config.http3.enabled }}
-          - "--entrypoints.{{ $entrypoint }}.http3"
+          - "--entryPoints.{{ $entrypoint }}.http3"
                     {{- if $config.http3.advertisedPort }}
-          - "--entrypoints.{{ $entrypoint }}.http3.advertisedPort={{ $config.http3.advertisedPort }}"
+          - "--entryPoints.{{ $entrypoint }}.http3.advertisedPort={{ $config.http3.advertisedPort }}"
                     {{- end }}
                   {{- end }}
                 {{- end }}
@@ -539,18 +541,45 @@
             {{- end }}
             {{- if $config.forwardedHeaders }}
               {{- if $config.forwardedHeaders.trustedIPs }}
-          - "--entrypoints.{{ $entrypoint }}.forwardedHeaders.trustedIPs={{ join "," $config.forwardedHeaders.trustedIPs }}"
+          - "--entryPoints.{{ $entrypoint }}.forwardedHeaders.trustedIPs={{ join "," $config.forwardedHeaders.trustedIPs }}"
               {{- end }}
               {{- if $config.forwardedHeaders.insecure }}
-          - "--entrypoints.{{ $entrypoint }}.forwardedHeaders.insecure"
+          - "--entryPoints.{{ $entrypoint }}.forwardedHeaders.insecure"
               {{- end }}
             {{- end }}
             {{- if $config.proxyProtocol }}
               {{- if $config.proxyProtocol.trustedIPs }}
-          - "--entrypoints.{{ $entrypoint }}.proxyProtocol.trustedIPs={{ join "," $config.proxyProtocol.trustedIPs }}"
+          - "--entryPoints.{{ $entrypoint }}.proxyProtocol.trustedIPs={{ join "," $config.proxyProtocol.trustedIPs }}"
               {{- end }}
               {{- if $config.proxyProtocol.insecure }}
-          - "--entrypoints.{{ $entrypoint }}.proxyProtocol.insecure"
+          - "--entryPoints.{{ $entrypoint }}.proxyProtocol.insecure"
+              {{- end }}
+            {{- end }}
+            {{- with $config.transport }}
+              {{- with .respondingTimeouts }}
+                {{- if and (ne .readTimeout nil) (toString .readTimeout) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.respondingTimeouts.readTimeout={{ .readTimeout }}"
+                {{- end }}
+                {{- if and (ne .writeTimeout nil) (toString .writeTimeout) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.respondingTimeouts.writeTimeout={{ .writeTimeout }}"
+                {{- end }}
+                {{- if and (ne .idleTimeout nil) (toString .idleTimeout) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.respondingTimeouts.idleTimeout={{ .idleTimeout }}"
+                {{- end }}
+              {{- end }}
+              {{- with .lifeCycle }}
+                {{- if and (ne .requestAcceptGraceTimeout nil) (toString .requestAcceptGraceTimeout) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.lifeCycle.requestAcceptGraceTimeout={{ .requestAcceptGraceTimeout }}"
+                {{- end }}
+                {{- if and (ne .graceTimeOut nil) (toString .graceTimeOut) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.lifeCycle.graceTimeOut={{ .graceTimeOut }}"
+                {{- end }}
+              {{- end }}
+              {{- if and (ne .keepAliveMaxRequests nil) (toString .keepAliveMaxRequests) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.keepAliveMaxRequests={{ .keepAliveMaxRequests }}"
+              {{- end }}
+              {{- if and (ne .keepAliveMaxTime nil) (toString .keepAliveMaxTime) }}
+          - "--entryPoints.{{ $entrypoint }}.transport.keepAliveMaxTime={{ .keepAliveMaxTime }}"
               {{- end }}
             {{- end }}
           {{- end }}
@@ -578,7 +607,7 @@
            {{- end }}
            {{- with .access.filters }}
             {{- with .statuscodes }}
-          - "--accesslog.filters.statuscodes={{ .statuscodes }}"
+          - "--accesslog.filters.statuscodes={{ . }}"
             {{- end }}
             {{- if .retryattempts }}
           - "--accesslog.filters.retryattempts"
