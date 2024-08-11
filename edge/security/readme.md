@@ -138,7 +138,7 @@ sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dport 808
 ```
 Also the use of other Linux programs like `trickle` might be worth checking out.
 
-# Dynamic State Control of Reverse Proxy
+## Dynamic State Control of Reverse Proxy
 The measures described so far should provide a solid cybersecurity foundation for your reverse proxy implementation. However, it might also be worthwhile to implement a dynamic state control mechanism for your reverse proxy.
 
 Instead of having the reverse proxy start by default after each boot-up of your edge device, consider keeping the proxy off by default. You can then run a script after each boot-up or continuously that evaluates the desired state of your system. Based on this evaluation, the script can start or stop the reverse proxy (and configure the firewall).
@@ -154,7 +154,7 @@ Other scenarios where dynamic activation and deactivation of the reverse proxy m
 - No Connectivity: When there is no connection to your CROWSI deployment, there is no meaning in having the proxy running.
 - Selective Exposure: You may want to expose Crowsi only on specific edge devices.
 
-## Implementation Suggestions
+### Implementation Suggestions
 The right way to implement such a state handler depends on your eco-system and the available methods of interaction with your edge-devices. However, here are some suggestions:
 
 - Backend Service/API: Offer a backend service or API that your edge devices can query every e.g. 30 minutes to determine whether the proxy should be running. The backend can implement custom logic, such as checking the device's software version against minimum requirements or verifying against a blacklist/whitelist.
