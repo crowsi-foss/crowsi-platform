@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: defaultapi
-        image: crowsi/httpcatcherdecoy:1.0.2  
+        image: crowsi/httpcatcherdecoy:1.1.0  
         ports:
         - containerPort: 8000
 
