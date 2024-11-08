@@ -25,6 +25,12 @@ spec:
         image: crowsi/httpcatcherdecoy:1.1.0  
         ports:
         - containerPort: 8000
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          seccompProfile:
+            type: "RuntimeDefault"
 
 ---
 

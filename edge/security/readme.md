@@ -100,37 +100,7 @@ table inet filter {
 }
 ```
 
-To limit the actual bandwidth, you could use a framework like `tc` or check if your reverse proxy offers relevant options. To use tc, first add markers to incoming request data within `nftables`:
-```
-#!/usr/sbin/nft -f
-
-flush ruleset
-
-table inet filter {
-    chain input {
-        type filter hook input priority 0;
-        
-        # Allow established and related connections
-        ct state established,related accept
-        
-        # Rate limit connections to port 8080 (5 per minute), mark packets for tc
-        tcp dport 8080 limit rate 5/minute counter mark set 1 accept
-
-        # Default policy to drop all other traffic
-        policy drop;
-    }
-    
-    chain forward {
-        type filter hook forward priority 0;
-    }
-    
-    chain output {
-        type filter hook output priority 0;
-    }
-}
-```
-
-Then, configure `tc`:
+To limit the actual bandwidth, you could use a framework like `tc` or check if your reverse proxy offers relevant options. To use tc, configure `tc` for example to limit the allowed bandwidth on the respective port:
 ```
 sudo tc qdisc add dev eth0 root handle 1: htb default 30
 sudo tc class add dev eth0 parent 1:1 classid 1:30 htb rate 1mbit
