@@ -22,7 +22,10 @@ spec:
     spec:
       containers:
       - name: defaultapi
-        image: crowsi/httpcatcherdecoy:1.1.3  
+        image: crowsi/httpcatcherdecoy:1.1.2  
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
         ports:
         - containerPort: 8000
         securityContext:
@@ -31,7 +34,9 @@ spec:
           runAsNonRoot: true
           seccompProfile:
             type: "RuntimeDefault"
-
+      volumes:
+      - name: tmp
+        emptyDir: {}
 ---
 
 apiVersion: v1
