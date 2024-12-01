@@ -6,7 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "docker"
-    directory: "/HelmTemplates/crowsi/templates"
+    directory: "/helm/crowsi/templates"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
