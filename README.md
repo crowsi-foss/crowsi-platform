@@ -19,7 +19,7 @@ In the following the necessary steps to install these will be described, but alw
 
 crowsi is currently tested with
 - cert-manager version 1.16.1
-- traefik version 
+- traefik version 33.0.0
 
 
 
