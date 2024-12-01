@@ -27,19 +27,24 @@ crowsi is currently tested with
 1. Clone or download this repository and open a terminal inside the crowsi-platform folder
 2. Install cert-manager on your kubernetes cluster. Run therefore the following code line
 
-
-`helm repo add cert-manager https://charts.jetstack.io`
-`helm install cert-manager cert-manager/cert-manager --version 1.16.1 -f ./helm/cert-manager/certmanagervalues.yaml`
+```
+helm repo add cert-manager https://charts.jetstack.io
+helm install cert-manager cert-manager/cert-manager --version 1.16.1 -f ./helm/cert-manager/certmanagervalues.yaml
+```
    
 3. Install traefik on your kubernetes cluster with the values stored in /helm/traefik/traefikvalues.yaml, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
 
-`helm repo add traefik https://traefik.github.io/charts`
-`helm install --values ./helm/traefik/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik traefik/traefik --version 33.0.0`
+```
+helm repo add traefik https://traefik.github.io/charts
+helm install --values ./helm/traefik/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik traefik/traefik --version 33.0.0
+```
 
 
 4. Install crowsi on your kubernetes cluster, while adding the base64 string of your CA certificate, the complete dns address of your deployment endpoint and your mail address.
 
-`helm install --set cacrt=base64string --set dnsName=DNSAddressOfYourEndpoint --set mail=YourMail crowsi ./helm/crowsi`
+```
+helm install --set cacrt=base64string --set dnsName=DNSAddressOfYourEndpoint --set mail=YourMail crowsi ./helm/crowsi
+```
 
 
 
