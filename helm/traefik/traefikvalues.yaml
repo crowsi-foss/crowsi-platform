@@ -44,7 +44,7 @@ tlsStore:
 
 ports:
   web:
-    redirectTo:
+    redirections:
       port: websecure
 
   websecure:
