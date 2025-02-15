@@ -45,7 +45,9 @@ tlsStore:
 ports:
   web:
     redirections:
-      port: websecure
+      entryPoint:
+        to: websecure
+        scheme: https
 
   websecure:
     middlewares:
