@@ -18,8 +18,8 @@ crowsi uses cert-manager and traefik to realize its fucntionality. Traefik is th
 In the following the necessary steps to install these will be described, but always checking the latest documenation of traefik and cert-manager is recomended.
 
 crowsi is currently tested with
-- cert-manager version 1.17.1
-- traefik version 34.3.0
+- cert-manager version 1.16.1
+- traefik version 33.0.0
 
 
 
@@ -29,14 +29,14 @@ crowsi is currently tested with
 
 ```
 helm repo add cert-manager https://charts.jetstack.io
-helm install cert-manager cert-manager/cert-manager --version 1.17.1 -f ./helm/cert-manager/certmanagervalues.yaml
+helm install cert-manager cert-manager/cert-manager --version 1.16.1 -f ./helm/cert-manager/certmanagervalues.yaml
 ```
    
 3. Install traefik on your kubernetes cluster with the values stored in /helm/traefik/traefikvalues.yaml, while adding a service annotation specifying the domain name under which your deployment endpoint shall be available. In Azure and traefik this can be done with the following command line. Please note that you need to chose a dns-label-name that is still available under Azure, so best choose something random and check if deployment is executed successfully. 
 
 ```
 helm repo add traefik https://traefik.github.io/charts
-helm install --values ./helm/traefik/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik traefik/traefik --version 34.3.0
+helm install --values ./helm/traefik/traefikvalues.yaml --set service.annotations."service\.beta\.kubernetes\.io/azure-dns-label-name"=someLabel traefik traefik/traefik --version 33.0.0
 ```
 
 
