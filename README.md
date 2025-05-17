@@ -23,6 +23,7 @@ crowsi is currently tested with
 
 
 
+
 # deployment steps
 1. Clone or download this repository and open a terminal inside the crowsi-platform folder
 2. Install cert-manager on your kubernetes cluster. Run therefore the following code line
@@ -60,6 +61,7 @@ There are many solutions out there, even some open source ones. To give an examp
 # Looking for a managed service and premium decoys?
 operating and enhancing a honeypot solution can be tough, therefore we are working on providing crowsi as a managed service platform.
 Want to get more details? Go to [www.crowsi.com/professional-services/](https://crowsi.com/professional-services/)
+
 
 
 
