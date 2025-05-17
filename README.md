@@ -8,7 +8,7 @@ www.crowsi.com
 
 # deployment prerequisites
 in order to set-up crowsi by yourself, you need:
-- a running kubernetes cluster (currently the crowsi-platform has been tested with azure kubernetes service, but any other provider should work as well)
+- a running kubernetes cluster (currently the crowsi-platform has been tested with azure kubernetes service, as well as k3s on an azure virtual maschine, but any other cluster set-up should work as well)
 - helm installed on your administration set-up
 - a mail address used to retrieve certificates from let's encrypt
 - base64 string of the certificate of the CA that signed the certificates of your edge devices (see www.crowsi.com/documentation for more details). You can encode a certificate into base64 on a terminal by using this command "cat ca.crt | base64"
