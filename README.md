@@ -47,7 +47,12 @@ helm install --values ./helm/traefik/traefikvalues.yaml --set service.annotation
 helm install --set cacrt=base64string --set dnsName=DNSAddressOfYourEndpoint --set mail=YourMail crowsi ./helm/crowsi
 ```
 
+You can control the HTTP response code and message returned by the default API decoy using Helm values:
 
+- `DefaultAPIResponseCode`: (optional) Set the HTTP status code to return (e.g., 200, 404). Must be an integer between 100 and 599. Defaults to 200 if not set or invalid.
+- `DefaultAPIResponseMessage`: (optional) Set the response message body. Defaults to "success" if not set.
+
+If both are unset, the default response is 200 with message "success".
 
 # how to gain insights
 Purpose of crowsi is to bind resources of attackers, interacting with valuable edge-device assets and create valuable insights by intensive logging. 

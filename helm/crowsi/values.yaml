@@ -13,5 +13,11 @@ version: 1.0.0
 
 acmeServer: https://acme-v02.api.letsencrypt.org/directory
 
+# Optional: Set to an integer HTTP status code (e.g., 404)
+#DefaultAPIResponseCode: "" 
+
+# Optional: Set to a custom response message
+#DefaultAPIResponseMessage: ""   
+
 
 
