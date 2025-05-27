@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: defaultapi
-        image: crowsi/httpcatcherdecoy:1.1.2  
+        image: crowsi/httpcatcherdecoy:1.2.0  
         volumeMounts:
         - name: tmp
           mountPath: /tmp
@@ -34,6 +34,15 @@ spec:
           runAsNonRoot: true
           seccompProfile:
             type: "RuntimeDefault"
+        env:
+        {{- if .Values.DefaultAPIResponseCode }}
+        - name: HTTP_RESPONSE_CODE
+          value: "{{ .Values.DefaultAPIResponseCode }}"
+        {{- end }}
+        {{- if .Values.DefaultAPIResponseMessage }}
+        - name: HTTP_RESPONSE_MESSAGE
+          value: "{{ .Values.DefaultAPIResponseMessage }}"
+        {{- end }}
       volumes:
       - name: tmp
         emptyDir: {}
